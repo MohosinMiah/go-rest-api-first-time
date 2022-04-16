@@ -89,6 +89,18 @@ func updateCountry(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// Delete country based on country id
+func deleteCountry(w http.ResponseWriter, r *http.Request) {
+	countryID := mux.Vars(r)["id"]
+
+	for i, singleCountry := range countries {
+		if singleCountry.ID == countryID {
+			countries = append(countries[:i], countries[i+1:]...)
+			fmt.Fprintf(w, "The event with ID %v has been deleted successfully", countryID)
+		}
+	}
+}
+
 func HomePage(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello, I am From Home Routing!")
 }
@@ -114,6 +126,9 @@ func main() {
 
 	// Update One country based on country id
 	router.HandleFunc("/countries/{id}", updateCountry).Methods("PATCH")
+
+	// Delete country based on country id
+	router.HandleFunc("/countries/{id}", deleteCountry).Methods("DELETE")
 
 	// server setup and Running Server : 8080 port
 	log.Fatal(http.ListenAndServe(":8080", router))
