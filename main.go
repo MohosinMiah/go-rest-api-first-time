@@ -37,7 +37,7 @@ var countries = allCountries{
 }
 
 // Create a New Country
-func createEvent(w http.ResponseWriter, r *http.Request) {
+func createCountry(w http.ResponseWriter, r *http.Request) {
 	var newCountry country
 	reqBody, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -49,6 +49,21 @@ func createEvent(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 
 	json.NewEncoder(w).Encode(newCountry)
+}
+
+func getAllCountries(w http.ResponseWriter, r *http.Request) {
+	json.NewEncoder(w).Encode(countries)
+
+}
+
+func getOneCountry(w http.ResponseWriter, r *http.Request) {
+	countryID := mux.Vars(r)["id"]
+
+	for _, singleCountry := range countries {
+		if singleCountry.ID == countryID {
+			json.NewEncoder(w).Encode(singleCountry)
+		}
+	}
 }
 
 func HomePage(w http.ResponseWriter, r *http.Request) {
@@ -66,7 +81,13 @@ func main() {
 	router.HandleFunc("/", HomePage)
 
 	// Create a New Country Server
-	router.HandleFunc("/create", createEvent).Methods("POST")
+	router.HandleFunc("/create", createCountry).Methods("POST")
+
+	// Create a New Country Server
+	router.HandleFunc("/countries", getAllCountries).Methods("GET")
+
+	// Create a New Country Server
+	router.HandleFunc("/countries/{id}", getOneCountry).Methods("GET")
 
 	// server setup and Running Server : 8080 port
 	log.Fatal(http.ListenAndServe(":8080", router))
