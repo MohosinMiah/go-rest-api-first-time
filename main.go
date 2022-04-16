@@ -51,17 +51,40 @@ func createCountry(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(newCountry)
 }
 
+// Return All Country
 func getAllCountries(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(countries)
 
 }
 
+// Return one country based on id
 func getOneCountry(w http.ResponseWriter, r *http.Request) {
 	countryID := mux.Vars(r)["id"]
 
 	for _, singleCountry := range countries {
 		if singleCountry.ID == countryID {
 			json.NewEncoder(w).Encode(singleCountry)
+		}
+	}
+}
+
+// Update one country based on id
+func updateCountry(w http.ResponseWriter, r *http.Request) {
+	countryID := mux.Vars(r)["id"]
+	var updatedcountry country
+
+	reqBody, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Fprintf(w, "Kindly enter data with the country title and description only in order to update")
+	}
+	json.Unmarshal(reqBody, &updatedcountry)
+
+	for i, singlecountry := range countries {
+		if singlecountry.ID == countryID {
+			singlecountry.Name = updatedcountry.Name
+			singlecountry.Description = updatedcountry.Description
+			countries = append(countries[:i], singlecountry)
+			json.NewEncoder(w).Encode(singlecountry)
 		}
 	}
 }
@@ -83,11 +106,14 @@ func main() {
 	// Create a New Country Server
 	router.HandleFunc("/create", createCountry).Methods("POST")
 
-	// Create a New Country Server
+	// Return All Country
 	router.HandleFunc("/countries", getAllCountries).Methods("GET")
 
-	// Create a New Country Server
+	// Return One country based on country id
 	router.HandleFunc("/countries/{id}", getOneCountry).Methods("GET")
+
+	// Update One country based on country id
+	router.HandleFunc("/countries/{id}", updateCountry).Methods("PATCH")
 
 	// server setup and Running Server : 8080 port
 	log.Fatal(http.ListenAndServe(":8080", router))
